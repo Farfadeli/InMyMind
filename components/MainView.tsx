@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Platform, View, Text, TouchableOpacity } from 'react-native';
 
 import { useContext } from 'react';
-import RouteContext from './context/RouteContext';
+import RouteContext from '../app/context/RouteContext';
 
 
 export default function MainView() {

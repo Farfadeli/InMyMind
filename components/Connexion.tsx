@@ -1,23 +1,55 @@
 import { Image, StyleSheet, TouchableOpacity, View, Text, TextInput, ScrollView } from 'react-native';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import RouteContext from '@/app/context/RouteContext';
 import { useContext, useState } from 'react';
 
 export default function Connexion(){
 
-    const [firstName, setFirstName] = useState("")
-    const [lastName, setLastName] = useState("")
+    const {setPath} = useContext(RouteContext)
+    const [errorText, setErrorText] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+
+    const storeData = async (key : string, data : string) => {
+        await AsyncStorage.setItem(key, data)
+    }
+
+    const get_user = async () => {
+        const response = await fetch('http://localhost:8000/user/connexion', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email : email,
+                password: password
+            })
+          });
+          const content = await response.json();
+          console.log(content)
+          if(content.success){
+            storeData("firstName", content.user.first_name)
+            storeData("lastName", content.user.last_name)
+            storeData("email", content.user.email)
+            setPath("/home")
+          }
+          else{
+            setErrorText(content.error)
+          }
+        
+    }
 
     return(
         <ScrollView style={styles.container}>
             <Text style={styles.topText}>Bon retour !</Text>
             <Text style={styles.bottomText}>Se connecter</Text>
             <Image style={styles.img} source={require("@/assets/images/perso_inscription.png")} />
+            <Text style={styles.error}>{errorText}</Text>
             <TextInput style={styles.inputs} onChangeText={setEmail} value={email} placeholder='Email...'/>
-            <TextInput style={styles.inputs} onChangeText={setPassword} value={password} placeholder='Password...'/>
-            <TouchableOpacity style={styles.btn}><Text style={styles.btnText}>Se connecter</Text></TouchableOpacity>
+            <TextInput secureTextEntry style={styles.inputs} onChangeText={setPassword} value={password} placeholder='Password...'/>
+            <TouchableOpacity style={styles.btn} onPress={() => {get_user()}}><Text style={styles.btnText}>Se connecter</Text></TouchableOpacity>
             <View style={styles.alreadyAccount}>
                 <Text>Pas de compte ?</Text>
                 <TouchableOpacity><Text style={styles.connexion}>S'inscrire</Text></TouchableOpacity>
@@ -88,5 +120,11 @@ const styles = StyleSheet.create({
     connexion : {
         color : "#9BAB8F",
         marginLeft: 10
+    },
+    error : {
+        color : "red",
+        marginLeft: "auto",
+        marginRight: "auto",
+        marginTop: 15
     }
 })

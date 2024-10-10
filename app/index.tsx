@@ -1,6 +1,6 @@
 import { Image, StyleSheet, ScrollView, View, Text } from 'react-native';
 
-import MainView from '@/app/MainView';
+import MainView from '@/components/MainView';
 import Inscription from '@/components/Inscription';
 import RouteContext from '@/app/context/RouteContext';
 import { useState } from 'react';

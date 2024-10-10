@@ -2,6 +2,7 @@ const express = require("express")
 const route = express.Router()
 const bcrypt = require("bcrypt")
 
+
 var mysql = require("mysql")
 
 
@@ -53,10 +54,44 @@ route.post("/inscription", async (req, res) => {
     }
 })
 
-route.post("/connexion" , (req, res) => {
-    const {email, password} = req.body
+route.post("/connexion", (req, res) => {
+    const { email, password } = req.body
 
-    if(typeof email !== 'string' && typeof password)
+
+    if (typeof email !== 'string' && typeof password !== 'string') {
+        res.json({ success: false, error: "Les données entrée sont incorrect" }).status(400)
+    }
+
+
+
+    else {
+        const sqlStatement = `Select firstName, lastname, email, password from users where email = '${email}'`
+        con.query(sqlStatement, async (err, result) => {
+            if (err) throw err
+            else {
+                if (result[0] !== undefined) {
+                    let isSame = await bcrypt.compare(password, result[0].password)
+                    if (!isSame) {
+                        res.json({ success: false, error: "L'email ou le mot passe sont incorrect" }).status(400)
+                    }
+                    else {
+                        res.json({
+                            success: true,
+                            user: {
+                                "first_name": result[0].firstName,
+                                "last_name": result[0].lastName,
+                                "email ": result[0].email
+                            }
+                        }).status(200)
+                    }
+                }
+                else{
+                    res.json({ success: false, error: "L'email ou le mot passe sont incorrect" }).status(400)
+                }
+
+            }
+        })
+    }
 
 })
 
